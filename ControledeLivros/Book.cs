@@ -25,5 +25,10 @@ namespace ControledeLivros
         {
             return "Nome: " + Name + ", ISBN: " + ISBN + ", Edição: " + Edition+ ", Autores: " + Authors + "\n";
         }
+
+        public string ToUser()
+        {
+            return this.Name + "," + this.ISBN + "," + this.Edition + "," + this.Authors + "\n";
+        }
     }
 }

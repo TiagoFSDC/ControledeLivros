@@ -11,6 +11,10 @@ internal class Program
     {
         string path = @"C:\\Users\\" + System.Environment.UserName + "\\";
 
+        string filebooks = path + "posselivros.txt";
+        string fileborrowb = path + "livrosemprestados.txt";
+        string filereading = path + "lendolivros.txt";
+
         List<Book> bookslist = new List<Book>();
         List<Book> borrowbooks = new List<Book>();
         List<Book> readbooks = new List<Book>();
@@ -23,6 +27,7 @@ internal class Program
                 file.Write(text);
             }
         }
+
         if (File.Exists(@"C:\\Users\\" + System.Environment.UserName + "\\livrosemprestados.txt") == false)
         {
             using (var file2 = new StreamWriter(path + "livrosemprestados.txt"))
@@ -40,6 +45,9 @@ internal class Program
                 file3.Write(text);
             }
         }
+        LoadFromFile(filebooks, bookslist);
+        LoadFromFile(fileborrowb, borrowbooks);
+        LoadFromFile(filereading, readbooks);
 
         int op;
         do
@@ -56,18 +64,35 @@ internal class Program
                     StreamWriter sw = new(path + "posselivros.txt");
                     foreach (var item in bookslist)
                     {
-                        sw.WriteLine(item);
+                        sw.Write(item.ToUser());
                     }
                     sw.Close();
                     break;
                 case 3:
-                    BorrowBook(bookslist);
+                    bookslist.Remove(BorrowBook(bookslist));
+                    StreamWriter sw2 = new(path + "posselivros.txt");
+                    foreach (var item in bookslist)
+                    {
+                        sw2.Write(item.ToUser());
+                    }
+                    sw2.Close();
                     break;
                 case 4:
-                    ReadBooks(bookslist);
+                    bookslist.Remove(ReadBooks(bookslist));
+                    StreamWriter sw3 = new(path + "posselivros.txt");
+                    foreach (var item in bookslist)
+                    {
+                        sw3.Write(item.ToUser());
+                    }
+                    sw3.Close();
                     break;
                 case 5:
-                    //PrintBooks();
+                    Console.WriteLine("Lista de livros:");
+                    PrintBooks(bookslist);
+                    Console.WriteLine("Lista de livros emprestados");
+                    PrintBooks(borrowbooks);
+                    Console.WriteLine("Lista de livros sendo lidos");
+                    PrintBooks(readbooks);
                     break;
                 case 6:
                     break;
@@ -104,7 +129,7 @@ internal class Program
             bookslist.Add(book);
 
             using var file = File.AppendText(@"C:\\Users\\" + System.Environment.UserName + "\\posselivros.txt");
-            file.Write(book);
+            file.Write(book.ToUser());
             file.Close();
 
             return book;
@@ -125,7 +150,7 @@ internal class Program
             return null;
         }
 
-        void BorrowBook(List<Book> book)
+        Book BorrowBook(List<Book> book)
         {
             Console.WriteLine("Digite o nome do livro que será emprestado: ");
             string name = Console.ReadLine();
@@ -134,11 +159,13 @@ internal class Program
                 if (item.Name.Equals(name))
                 {
                     using var file2 = File.AppendText(@"C:\\Users\\" + System.Environment.UserName + "\\livrosemprestados.txt");
-                    file2.Write(item);
+                    file2.Write(item.ToUser());
                     file2.Close();
                     borrowbooks.Add(item);
+                    return item;
                 }
             }
+            return null;
         }
 
         Book ReadBooks(List<Book> books)
@@ -150,7 +177,7 @@ internal class Program
                 if (item.Name.Equals(name))
                 {
                     using var file3 = File.AppendText(@"C:\\Users\\" + System.Environment.UserName + "\\lendolivros.txt");
-                    file3.Write(item);
+                    file3.Write(item.ToUser());
                     file3.Close();
                     readbooks.Add(item);
                     return item;
@@ -178,5 +205,33 @@ internal class Program
             }
             return text;
         }
+        List<Book> LoadFromFile(string file, List<Book> books)
+        {
+            if (File.Exists(file))
+            {
+                StreamReader sr = new(file);
+                while (!sr.EndOfStream)
+                {
+                    string[] book = sr.ReadLine().Split(",");
+                    string name = book[0];
+                    string isbn = book[1];
+                    string edition = book[2];
+                    string authors = book[3];
+
+                    books.Add(new(name, isbn, edition, authors));
+                }
+                sr.Close();
+            }
+            return books;
+        }
+        void PrintBooks(List<Book> l)
+        {
+            foreach (var book in l)
+            {
+                Console.WriteLine(book.ToString());
+                Console.ReadLine();
+            }
+        }
     }
+
 }
